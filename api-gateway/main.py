@@ -3,5 +3,5 @@ from fastapi import FastAPI
 app = FastAPI()
 
 @app.get('/')
-def get_products():
-    return 'Hello'
+async def index():
+    return {"Hello": "World!"}
