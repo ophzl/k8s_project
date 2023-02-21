@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-deployment
+spec:
+  selector:
+    matchLabels:
+      app: pg-deployment
+  template:
+    metadata:
+      labels:
+        app: pg-deployment
+    spec:
+      containers:
+        - name: pg-deployment
+          image: postgres:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: pg-config
+          volumeMounts:
+            - mountPath: /var/opt/pgsql/data
+              name: pgsql-claim
+      restartPolicy: Always
+      volumes:
+        - name: pgsql-claim
+          hostPath:
+            path: /run/desktop/mnt/host/c/Users/ophel/Développement/MAALSI/Kubernetes/pgsql_data
+            type: DirectoryOrCreate
