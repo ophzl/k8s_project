@@ -1,22 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: products-deployment
+  name: products
+  labels:
+    name: products
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: products-deployment
+      app: products
   template:
     metadata:
       labels:
-        app: products-deployment
+        app: products
     spec:
       containers:
       - name: products
-        image: products:latest
+        image: ophzl/k8s-project_products-service:1.0
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
-        - containerPort: 8081
+        - containerPort: 8001
+        env:
+          - name: PSQL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: psql_username
+                name: products
+          - name: PSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: psql_password
+                name: products
+          - name: DATABASE_URL
+            value: postgresql://admin:psltest@pg-service:5432/postgresdb
+      restartPolicy: Always

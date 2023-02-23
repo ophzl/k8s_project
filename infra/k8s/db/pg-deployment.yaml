@@ -20,9 +20,13 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 5432
-          envFrom:
-            - configMapRef:
-                name: pg-config
+          env:
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: psltest
+            - name: POSTGRES_DB
+              value: postgresdb
           volumeMounts:
             - mountPath: /var/opt/pgsql/data
               name: pgsql-claim

@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 psycopg2
-dotenv
+python-dotenv
 alembic
 fastapi_sqlalchemy
