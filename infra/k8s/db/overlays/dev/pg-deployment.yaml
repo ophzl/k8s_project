@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-deployment
+  template:
+    metadata:
+      labels:
+        app: pg-deployment
+    spec:
+      volumes:
+        - name: postgres-pv-claim
+          hostPath:
+            path: /run/desktop/mnt/host/c/psql_data
+            type: DirectoryOrCreate
