@@ -33,15 +33,15 @@ spec:
                   name: pg-secrets
             - name: POSTGRES_DB
               valueFrom:
-                secretKeyRef:
+                configMapKeyRef:
                   key: POSTGRES_DB
                   name: pg-config
           volumeMounts:
-            - mountPath: /var/opt/pgsql/data
-              name: pgsql-claim
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-pv-claim
       restartPolicy: Always
       volumes:
-        - name: pgsql-claim
+        - name: postgres-pv-claim
           hostPath:
-            path: /run/desktop/mnt/host/c/Users/ophel/Développement/MAALSI/Kubernetes/pgsql_data
+            path: /run/desktop/mnt/host/c/psql_data
             type: DirectoryOrCreate
