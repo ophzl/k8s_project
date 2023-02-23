@@ -22,11 +22,20 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_USER
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USERNAME
+                  name: pg-secrets
             - name: POSTGRES_PASSWORD
-              value: psltest
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: pg-secrets
             - name: POSTGRES_DB
-              value: postgresdb
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_DB
+                  name: pg-config
           volumeMounts:
             - mountPath: /var/opt/pgsql/data
               name: pgsql-claim
