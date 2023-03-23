@@ -43,5 +43,5 @@ spec:
       volumes:
         - name: postgres-pv-claim
           hostPath:
-            path: /run/desktop/mnt/host/c/psql_data
+            path: ""
             type: DirectoryOrCreate
