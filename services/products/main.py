@@ -6,7 +6,7 @@ import os
 from schema import ProductSchema
 from models import Product
 
-load_dotenv('.env')
+# load_dotenv('.env')
 
 app = FastAPI()
 app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
