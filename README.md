@@ -13,3 +13,5 @@ create table products(id serial primary key,name varchar(50),description varchar
 ```sh
 kubectl exec -it <nom_du_pod> -n python-proj --  psql -h localhost -U admin --password -p 5432 postgresdb
 ```
+
+PS : le service "cart" n'a pas été dev
