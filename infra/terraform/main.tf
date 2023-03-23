@@ -20,26 +20,34 @@ resource "azurerm_postgresql_server" "psql-server" {
   administrator_login          = data.azurerm_key_vault_secret.db-login.value
   administrator_login_password = data.azurerm_key_vault_secret.db-pwd.value
 
-  sku_name   = "GP_Gen5_4"
-  version    = "11"
-  storage_mb = 640000
+  sku_name   = "B_Gen5_2"
+  version    = "9.5"
+  storage_mb = 5120
 
   backup_retention_days        = 7
-  geo_redundant_backup_enabled = true
+  geo_redundant_backup_enabled = false
   auto_grow_enabled            = true
 
-  public_network_access_enabled    = false
+#   public_network_access_enabled    = true
   ssl_enforcement_enabled          = false
   ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
 
-# resource "azurerm_postgresql_firewall_rule" "psql-fw" {
-#   name                = "AllowAzureServices"
-#   resource_group_name = data.azurerm_resource_group.rg.name
-#   server_name         = azurerm_postgresql_server.psql-server.name
-#   start_ip_address    = "0.0.0.0"
-#   end_ip_address      = "0.0.0.0"
-# }
+resource "azurerm_postgresql_database" "pg-db" {
+  name                = "pg-db"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  server_name         = azurerm_postgresql_server.psql-server.name
+  charset             = "UTF8"
+  collation           = "English_United States.1252"
+}
+
+resource "azurerm_postgresql_firewall_rule" "psql-fw" {
+  name                = "psql-fw"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  server_name         = azurerm_postgresql_server.psql-server.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
 
 resource "azurerm_service_plan" "service-plan" {
   name                = "plan-${var.project_name}${var.environment_suffix}"
@@ -64,12 +72,7 @@ resource "azurerm_container_group" "pgadmin" {
     memory = "1.5"
 
     ports {
-      port     = 5432
-      protocol = "TCP"
-    }
-
-    ports {
-      port     = 15432
+      port     = 80
       protocol = "TCP"
     }
 
@@ -86,20 +89,24 @@ resource "azurerm_linux_web_app" "api" {
   location            = data.azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.service-plan.id
 
-  site_config {
+ site_config {
     application_stack {
-      python_version = "3.10"
+      node_version = "16-lts"
     }
   }
 
-  connection_string {
-    name = "DefaultConnection"
-    value = "dbname='postgres' user='${data.azurerm_key_vault_secret.db-login.value}@${azurerm_postgresql_server.psql-server.name}' host='${azurerm_postgresql_server.psql-server.name}.postgres.database.azure.com' password='${data.azurerm_key_vault_secret.db-pwd.value}' port='5432' sslmode='true'"
-    type = "PostgreSQL"
-  }
-
   app_settings = {
-    "POSTGRES_USERNAME": data.azurerm_key_vault_secret.db-login.value,
-    "POSTGRES_PASSWORD": data.azurerm_key_vault_secret.db-pwd.value,
+    PORT                      = var.api_port
+    DB_HOST                   = azurerm_postgresql_server.psql-server.fqdn
+    DB_USERNAME               = "${data.azurerm_key_vault_secret.db-login.value}@${azurerm_postgresql_server.psql-server.name}"
+    DB_PASSWORD               = data.azurerm_key_vault_secret.db-pwd.value
+    DB_DATABASE               = azurerm_postgresql_database.pg-db.name
+    DB_DAILECT                = "postgres"
+    DB_PORT                   = 5432
+    ACCESS_TOKEN_SECRET       = data.azurerm_key_vault_secret.access-token-secret.value
+    REFRESH_TOKEN_SECRET      = data.azurerm_key_vault_secret.refresh-token-secret.value
+    ACCESS_TOKEN_EXPIRY       = var.access_token_expiry
+    REFRESH_TOKEN_EXPIRY      = var.refresh_token_expiry
+    REFRESH_TOKEN_COOKIE_NAME = var.refresh_token_cookie_name
   }
 }
